@@ -10,7 +10,7 @@ strike_data = data['data']['strategyChainData']['strikeMap']
 
 # Display the table using Streamlit
 st.title('Option Chain Data')
-st.write("Showing 'callOptionData' and 'putOptionData' for all strikes with sentiment conditions.")
+st.write("Showing 'callOptionData' and 'putOptionData' for all strikes with sentiment conditions based on Delta.")
 
 # Table header
 columns = ['Strike', 'Option Type', 'Instrument Key', 'LTP', 'Bid Price', 'Bid Qty', 'Ask Price', 'Ask Qty', 'Volume', 'OI', 'Prev OI', 'OI Change', 'Sentiment', 'Trend', 'Delta', 'Gamma', 'Vega', 'Theta', 'IV', 'PCR', 'Sentiment Condition']
@@ -43,15 +43,15 @@ for strike, strike_info in strike_data.items():
     iv_call = analytics_call.get('iv', 0)
 
     # Determine sentiment based on conditions
-    if delta_call >= 0.7 and gamma_call >= 0.7 and vega_call > 0 and theta_call <= 0 and iv_call > 0 and oi_change_call > 0:
+    if delta_call >= 0.7:
         sentiment_condition_call = 'Strong Bullish'
-    elif 0.3 <= delta_call < 0.7 and 0.3 <= gamma_call < 0.7 and vega_call >= 0 and theta_call >= 0 and (iv_call >= 0 or oi_change_call > 0):
+    elif 0.3 <= delta_call < 0.7:
         sentiment_condition_call = 'Mild Bullish'
-    elif -0.3 <= delta_call <= 0.3 and 0 <= gamma_call <= 0.3 and vega_call == 0 and -0.3 <= theta_call <= 0.3 and iv_call == 0 and oi_change_call == 0:
+    elif -0.3 <= delta_call <= 0.3:
         sentiment_condition_call = 'Neutral'
-    elif -0.7 <= delta_call < -0.3 and 0 <= gamma_call <= 0.7 and vega_call >= 0 and -0.3 <= theta_call <= 0 and (iv_call >= 0 or oi_change_call > 0):
+    elif -0.7 <= delta_call < -0.3:
         sentiment_condition_call = 'Mild Bearish'
-    elif delta_call < -0.7 and gamma_call >= 0.7 and vega_call > 0 and theta_call >= 0 and iv_call > 0 and oi_change_call > 0:
+    elif delta_call < -0.7:
         sentiment_condition_call = 'Strong Bearish'
     else:
         sentiment_condition_call = 'Not Defined'
@@ -84,15 +84,15 @@ for strike, strike_info in strike_data.items():
     iv_put = analytics_put.get('iv', 0)
 
     # Determine sentiment based on conditions
-    if delta_put >= 0.7 and gamma_put >= 0.7 and vega_put > 0 and theta_put >= 0 and iv_put > 0 and oi_change_put > 0:
+    if delta_put >= 0.7:
         sentiment_condition_put = 'Strong Bullish'
-    elif 0.3 <= delta_put < 0.7 and 0.3 <= gamma_put < 0.7 and vega_put >= 0 and theta_put >= 0 and (iv_put >= 0 or oi_change_put > 0):
+    elif 0.3 <= delta_put < 0.7:
         sentiment_condition_put = 'Mild Bullish'
-    elif -0.3 <= delta_put <= 0.3 and 0 <= gamma_put <= 0.3 and vega_put == 0 and -0.3 <= theta_put <= 0.3 and iv_put == 0 and oi_change_put == 0:
+    elif -0.3 <= delta_put <= 0.3:
         sentiment_condition_put = 'Neutral'
-    elif -0.7 <= delta_put < -0.3 and 0 <= gamma_put <= 0.7 and vega_put >= 0 and -0.3 <= theta_put <= 0 and (iv_put >= 0 or oi_change_put > 0):
+    elif -0.7 <= delta_put < -0.3:
         sentiment_condition_put = 'Mild Bearish'
-    elif delta_put < -0.7 and gamma_put >= 0.7 and vega_put > 0 and theta_put >= 0 and iv_put > 0 and oi_change_put > 0:
+    elif delta_put < -0.7:
         sentiment_condition_put = 'Strong Bearish'
     else:
         sentiment_condition_put = 'Not Defined'
