@@ -13,13 +13,11 @@ def fetch_data(api_url):
 
 # Function to process and display the data
 def display_data(data):
-    st.subheader("Raw Data:")
-    if not data:
+    if not data or 'call' not in data or 'put' not in data:
         st.error("Error: Invalid data format.")
-        st.write("No data available.")
+        st.write("Raw Data:")
+        st.write(data)
         return
-
-    st.dataframe(pd.json_normalize(data))
 
     call_sum = sum(item['oi'] - item['prevOi'] for item in data['call'])
     put_sum = sum(item['oi'] - item['prevOi'] for item in data['put'])
