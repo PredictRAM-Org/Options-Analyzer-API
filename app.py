@@ -8,12 +8,15 @@ with open('upstox_data.json', 'r') as file:
 # Extract relevant data
 strike_data = data['data']['strategyChainData']['strikeMap']
 
+# Convert strike prices to integers
+strike_prices = list(map(float, strike_data.keys()))
+
 # Display the table using Streamlit
 st.title('Option Chain Data Analysis')
 st.write("Select a strike price to view detailed information for both call and put options.")
 
 # Slider to select the strike price
-selected_strike = st.slider('Select Strike Price', min_value=min(strike_data.keys()), max_value=max(strike_data.keys()))
+selected_strike = st.slider('Select Strike Price', min_value=min(strike_prices), max_value=max(strike_prices))
 
 # Table header
 columns = ['Option Type', 'Instrument Key', 'LTP', 'Bid Price', 'Bid Qty', 'Ask Price', 'Ask Qty', 'Volume', 'OI', 'Prev OI', 'OI Change', 'Sentiment', 'Trend', 'Delta', 'Gamma', 'Vega', 'Theta', 'IV', 'PCR', 'Sentiment Condition']
