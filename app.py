@@ -16,10 +16,12 @@ def fetch_option_data(strike_map):
         call_option_data = [option for option in option_data.get('callOptionData', []) if option.get('strikePrice') == strike_map]
         put_option_data = [option for option in option_data.get('putOptionData', []) if option.get('strikePrice') == strike_map]
         
-        return call_option_data, put_option_data
+        market_data = option_data.get('marketData', {})
+
+        return call_option_data, put_option_data, market_data
     else:
         st.error(f"Error fetching data. Status Code: {response.status_code}")
-        return None, None
+        return None, None, None
 
 # Streamlit app
 def main():
@@ -29,7 +31,7 @@ def main():
     selected_strike_map = st.selectbox("Select StrikeMap:", [20000, 20050, 20100])
     
     # Fetch option data based on selected strikeMap
-    call_options, put_options = fetch_option_data(selected_strike_map)
+    call_options, put_options, market_data = fetch_option_data(selected_strike_map)
     
     # Display call option data in a table
     st.subheader("Call Option Data")
@@ -47,7 +49,6 @@ def main():
 
     # Display market data
     st.subheader("Market Data")
-    market_data = option_data.get('marketData', {})
     st.write(f"Open Interest (OI): {market_data.get('oi', 'N/A')}")
     st.write(f"Change in OI: {market_data.get('changeInOI', 'N/A')}")
     st.write(f"Volume: {market_data.get('volume', 'N/A')}")
