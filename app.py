@@ -8,7 +8,10 @@ def fetch_option_data(strike_map):
     
     if response.status_code == 200:
         option_data = response.json()
-        
+
+        # Check the structure of the API response
+        print(option_data)
+
         # Filter data based on selected strikeMap
         call_option_data = [option for option in option_data.get('callOptionData', []) if option.get('strikePrice') == strike_map]
         put_option_data = [option for option in option_data.get('putOptionData', []) if option.get('strikePrice') == strike_map]
