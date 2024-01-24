@@ -12,10 +12,20 @@ def fetch_and_save_data(api_url, file_path):
 
 # Function to analyze options data
 def analyze_options_data(data):
-    # Implement your analysis logic here
-    # For example, you can print or display relevant information using st.write()
-    st.write("Options data analysis results:")
-    st.write(data)
+    call_sum = 0
+    put_sum = 0
+
+    # Loop through the data and calculate sums
+    for strategy_chain in data.get('data', []):
+        for leg in strategy_chain.get('legs', []):
+            if leg.get('optionType') == 'CE':  # Call option
+                call_sum += leg.get('changeinOpenInterest', 0)
+            elif leg.get('optionType') == 'PE':  # Put option
+                put_sum += leg.get('changeinOpenInterest', 0)
+
+    # Display results
+    st.write("**Call Sum:**", call_sum)
+    st.write("**Put Sum:**", put_sum)
 
 # Main Streamlit app
 def main():
