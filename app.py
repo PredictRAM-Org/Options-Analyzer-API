@@ -13,32 +13,37 @@ def fetch_data(api_url):
 
 # Function to process and display the data
 def display_data(data):
-    if not data or 'call' not in data or 'put' not in data:
+    st.subheader("Raw Data:")
+    if not data:
         st.error("Error: Invalid data format.")
-        st.write("Raw Data:")
-        st.write(data)
+        st.write("No data available.")
         return
 
-    call_sum = sum(item['oi'] - item['prevOi'] for item in data['call'])
-    put_sum = sum(item['oi'] - item['prevOi'] for item in data['put'])
-    difference = call_sum - put_sum
+    st.dataframe(pd.json_normalize(data), width=1000, height=400)
 
     st.subheader("Options Open Interest Analysis")
 
-    # Display the data in a table
-    df_call = pd.DataFrame(data['call'])
-    df_put = pd.DataFrame(data['put'])
+    # Separate call and put data
+    call_data = data.get('call', [])
+    put_data = data.get('put', [])
 
+    # Display the strike map in the center
+    st.write("---")
+    st.subheader("Strike Map")
+    st.write("Center Column - Strike Map")
+    st.write("---")
+
+    # Display the call options on the left
+    st.write("---")
     st.subheader("Call Options")
-    st.dataframe(df_call)
+    st.table(pd.DataFrame(call_data))
+    st.write("---")
 
+    # Display the put options on the right
+    st.write("---")
     st.subheader("Put Options")
-    st.dataframe(df_put)
-
-    st.subheader("Summary")
-    st.write(f"Call Sum: {call_sum}")
-    st.write(f"Put Sum: {put_sum}")
-    st.write(f"Difference: {difference}")
+    st.table(pd.DataFrame(put_data))
+    st.write("---")
 
 # Streamlit app
 def main():
