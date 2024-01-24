@@ -21,9 +21,13 @@ def analyze_options_chain(call_strike, put_strike, options_data):
     call_option_data = options_data.get('callOptionData', {}).get(str(call_strike), {})
     put_option_data = options_data.get('putOptionData', {}).get(str(put_strike), {})
 
+    # Debug prints to identify the issue
+    print(f"Selected Call Strike: {call_strike}, Call Option Data: {call_option_data}")
+    print(f"Selected Put Strike: {put_strike}, Put Option Data: {put_option_data}")
+
     # Check if the required data is present
     if not call_option_data or not put_option_data:
-        st.error("Error: Options data not found for the selected strikes.")
+        st.error(f"Error: Options data not found for the selected strikes. Call Strike: {call_strike}, Put Strike: {put_strike}")
         return {}
 
     # Extract relevant information from call and put option data
