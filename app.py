@@ -45,7 +45,7 @@ for strike, strike_info in strike_data.items():
     # Determine sentiment based on conditions
     if delta_call >= 0.7 and gamma_call >= 0.7 and vega_call > 0 and theta_call <= 0 and iv_call > 0 and oi_change_call > 0:
         sentiment_condition_call = 'Strong Bullish'
-    elif 0.3 <= delta_call < 0.7 and 0.3 <= gamma_call < 0.7 and vega_call >= 0 and theta_call <= 0 and (iv_call >= 0 or oi_change_call > 0):
+    elif 0.3 <= delta_call < 0.7 and 0.3 <= gamma_call < 0.7 and vega_call >= 0 and theta_call >= 0 and (iv_call >= 0 or oi_change_call > 0):
         sentiment_condition_call = 'Mild Bullish'
     elif -0.3 <= delta_call <= 0.3 and 0 <= gamma_call <= 0.3 and vega_call == 0 and -0.3 <= theta_call <= 0.3 and iv_call == 0 and oi_change_call == 0:
         sentiment_condition_call = 'Neutral'
@@ -92,7 +92,7 @@ for strike, strike_info in strike_data.items():
         sentiment_condition_put = 'Neutral'
     elif -0.7 <= delta_put < -0.3 and 0 <= gamma_put <= 0.7 and vega_put >= 0 and -0.3 <= theta_put <= 0 and (iv_put >= 0 or oi_change_put > 0):
         sentiment_condition_put = 'Mild Bearish'
-    elif delta_put < -0.7 and gamma_put >= 0.7 and vega_put > 0 and theta_put <= 0 and iv_put > 0 and oi_change_put > 0:
+    elif delta_put < -0.7 and gamma_put >= 0.7 and vega_put > 0 and theta_put >= 0 and iv_put > 0 and oi_change_put > 0:
         sentiment_condition_put = 'Strong Bearish'
     else:
         sentiment_condition_put = 'Not Defined'
