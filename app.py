@@ -2,8 +2,8 @@ import streamlit as st
 import json
 
 # Define the threshold values
-threshold_high = 50000000  # You can adjust this value based on your analysis
-threshold_low = 1500000    # You can adjust this value based on your analysis
+threshold_high = 1000  # You can adjust this value based on your analysis
+threshold_low = 500    # You can adjust this value based on your analysis
 
 # Load JSON data from file
 with open('upstox_data.json', 'r') as file:
@@ -49,7 +49,7 @@ else:
 
 # Calculate Call Sum | Calculated
 call_sum_calculated = 0
-for i in range(int(selected_strike), int(selected_strike) - 3, -1):
+for i in range(int(selected_strike), int(selected_strike) + 3):
     if str(i) in strike_data:
         call_sum_calculated += strike_data[str(i)].get('callOptionData', {}).get('marketData', {}).get('oi', 0) - strike_data[str(i)].get('callOptionData', {}).get('marketData', {}).get('prevOi', 0)
 
@@ -84,7 +84,7 @@ else:
 
 # Calculate Put Sum | Calculated
 put_sum_calculated = 0
-for i in range(int(selected_strike), int(selected_strike) + 3):
+for i in range(int(selected_strike), int(selected_strike) - 3, -1):
     if str(i) in strike_data:
         put_sum_calculated += strike_data[str(i)].get('putOptionData', {}).get('marketData', {}).get('oi', 0) - strike_data[str(i)].get('putOptionData', {}).get('marketData', {}).get('prevOi', 0)
 
