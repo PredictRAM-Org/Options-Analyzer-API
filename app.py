@@ -49,10 +49,15 @@ def main():
 
     # Display market data
     st.subheader("Market Data")
-    st.write(f"Open Interest (OI): {market_data.get('oi', 'N/A')}")
-    st.write(f"Change in OI: {market_data.get('changeInOI', 'N/A')}")
+    st.write(f"Last Traded Price (LTP): {market_data.get('ltp', 'N/A')}")
+    st.write(f"Close Price (CP): {market_data.get('cp', 'N/A')}")
+    st.write(f"Bid Price: {market_data.get('bidPrice', 'N/A')}")
+    st.write(f"Bid Quantity: {market_data.get('bidQty', 'N/A')}")
+    st.write(f"Ask Price: {market_data.get('askPrice', 'N/A')}")
+    st.write(f"Ask Quantity: {market_data.get('askQty', 'N/A')}")
     st.write(f"Volume: {market_data.get('volume', 'N/A')}")
-    st.write(f"Change in Volume: {market_data.get('changeInVolume', 'N/A')}")
+    st.write(f"Open Interest (OI): {market_data.get('oi', 'N/A')}")
+    st.write(f"Previous Open Interest (Prev OI): {market_data.get('prevOi', 'N/A')}")
 
 if __name__ == "__main__":
     main()
