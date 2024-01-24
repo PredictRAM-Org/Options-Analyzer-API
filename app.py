@@ -10,7 +10,7 @@ strike_data = data['data']['strategyChainData']['strikeMap']
 
 # Display the table using Streamlit
 st.title('Option Chain Data')
-st.write("Showing 'callOptionData' and 'putOptionData' for all strikes with sentiment conditions based on Delta.")
+st.write("Showing 'callOptionData' and 'putOptionData' for all strikes with sentiment conditions based on Delta and Change in Open Interest.")
 
 # Table header
 columns = ['Strike', 'Option Type', 'Instrument Key', 'LTP', 'Bid Price', 'Bid Qty', 'Ask Price', 'Ask Qty', 'Volume', 'OI', 'Prev OI', 'OI Change', 'Sentiment', 'Trend', 'Delta', 'Gamma', 'Vega', 'Theta', 'IV', 'PCR', 'Sentiment Condition']
@@ -43,15 +43,15 @@ for strike, strike_info in strike_data.items():
     iv_call = analytics_call.get('iv', 0)
 
     # Determine sentiment based on conditions
-    if delta_call >= 0.7:
+    if delta_call >= 0.7 and oi_change_call > 0:
         sentiment_condition_call = 'Strong Bullish'
-    elif 0.3 <= delta_call < 0.7:
+    elif 0.3 <= delta_call < 0.7 and oi_change_call > 0:
         sentiment_condition_call = 'Mild Bullish'
-    elif -0.3 <= delta_call <= 0.3:
+    elif -0.3 <= delta_call <= 0.3 and oi_change_call == 0:
         sentiment_condition_call = 'Neutral'
-    elif -0.7 <= delta_call < -0.3:
+    elif -0.7 <= delta_call < -0.3 and oi_change_call < 0:
         sentiment_condition_call = 'Mild Bearish'
-    elif delta_call < -0.7:
+    elif delta_call < -0.7 and oi_change_call < 0:
         sentiment_condition_call = 'Strong Bearish'
     else:
         sentiment_condition_call = 'Not Defined'
@@ -84,15 +84,15 @@ for strike, strike_info in strike_data.items():
     iv_put = analytics_put.get('iv', 0)
 
     # Determine sentiment based on conditions
-    if delta_put >= 0.7:
+    if delta_put >= 0.7 and oi_change_put > 0:
         sentiment_condition_put = 'Strong Bullish'
-    elif 0.3 <= delta_put < 0.7:
+    elif 0.3 <= delta_put < 0.7 and oi_change_put > 0:
         sentiment_condition_put = 'Mild Bullish'
-    elif -0.3 <= delta_put <= 0.3:
+    elif -0.3 <= delta_put <= 0.3 and oi_change_put == 0:
         sentiment_condition_put = 'Neutral'
-    elif -0.7 <= delta_put < -0.3:
+    elif -0.7 <= delta_put < -0.3 and oi_change_put < 0:
         sentiment_condition_put = 'Mild Bearish'
-    elif delta_put < -0.7:
+    elif delta_put < -0.7 and oi_change_put < 0:
         sentiment_condition_put = 'Strong Bearish'
     else:
         sentiment_condition_put = 'Not Defined'
