@@ -15,6 +15,8 @@ def fetch_data(api_url):
 def display_data(data):
     if not data or 'call' not in data or 'put' not in data:
         st.error("Error: Invalid data format.")
+        st.write("Raw Data:")
+        st.write(data)
         return
 
     call_sum = sum(item['oi'] - item['prevOi'] for item in data['call'])
