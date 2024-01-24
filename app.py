@@ -10,8 +10,8 @@ def fetch_option_data(strike_map):
         option_data = response.json()
         
         # Filter data based on selected strikeMap
-        call_option_data = [option for option in option_data['callOptionData'] if option['strikeMap'] == strike_map]
-        put_option_data = [option for option in option_data['putOptionData'] if option['strikeMap'] == strike_map]
+        call_option_data = [option for option in option_data.get('callOptionData', []) if option.get('strikePrice') == strike_map]
+        put_option_data = [option for option in option_data.get('putOptionData', []) if option.get('strikePrice') == strike_map]
         
         return call_option_data, put_option_data
     else:
@@ -23,7 +23,7 @@ def main():
     st.title("Option Analytics App")
     
     # Option to select strikeMap
-    selected_strike_map = st.selectbox("Select StrikeMap:", [100, 200, 300, 400, 500])
+    selected_strike_map = st.selectbox("Select StrikeMap:", [20000, 20050, 20100])
     
     # Fetch option data based on selected strikeMap
     call_options, put_options = fetch_option_data(selected_strike_map)
