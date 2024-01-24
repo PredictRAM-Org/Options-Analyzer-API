@@ -1,55 +1,44 @@
-import streamlit as st
 import requests
+import json
+import streamlit as st
 
-# Function to fetch option data based on strikeMap
-def fetch_option_data(strike_map):
-    api_url = f"https://service.upstox.com/option-analytics-tool/open/v1/strategy-chains?assetKey=NSE_INDEX%7CNifty+50&strategyChainType=PC_CHAIN&expiry=25-01-2024"
+# Function to fetch data from the API and save it to a JSON file
+def fetch_and_save_data(api_url, file_path):
     response = requests.get(api_url)
-    
-    if response.status_code == 200:
-        option_data = response.json()
+    data = response.json()
 
-        # Check the structure of the API response
-        print(option_data)
+    with open(file_path, 'w') as json_file:
+        json.dump(data, json_file)
 
-        # Filter data based on selected strikeMap
-        call_option_data = [option for option in option_data.get('callOptionData', []) if option.get('strikePrice') == strike_map]
-        put_option_data = [option for option in option_data.get('putOptionData', []) if option.get('strikePrice') == strike_map]
-        
-        market_data = option_data.get('marketData', {})
+# Function to analyze options data
+def analyze_options_data(data):
+    # Implement your analysis logic here
+    # For example, you can print or display relevant information using st.write()
+    st.write("Options data analysis results:")
+    st.write(data)
 
-        return call_option_data, put_option_data, market_data
-    else:
-        st.error(f"Error fetching data. Status Code: {response.status_code}")
-        return None, None, None
-
-# Streamlit app
+# Main Streamlit app
 def main():
-    st.title("Option Analytics App")
-    
-    # Option to select strikeMap
-    selected_strike_map = st.selectbox("Select StrikeMap:", [20000, 20050, 20100])
-    
-    # Fetch option data based on selected strikeMap
-    call_options, put_options, market_data = fetch_option_data(selected_strike_map)
-    
-    # Display call option data in a table
-    st.subheader("Call Option Data")
-    if call_options:
-        st.table(call_options)
-    else:
-        st.warning("No data available for selected strikeMap.")
+    st.title("Options Analyzer App")
 
-    # Display put option data in a table
-    st.subheader("Put Option Data")
-    if put_options:
-        st.table(put_options)
-    else:
-        st.warning("No data available for selected strikeMap.")
+    # Fetch and save data on button click
+    if st.button("Fetch and Save Options Data"):
+        api_url = "https://service.upstox.com/option-analytics-tool/open/v1/strategy-chains?assetKey=NSE_INDEX%7CNifty+50&strategyChainType=PC_CHAIN&expiry=25-01-2024"
+        file_path = "options_data.json"
+        fetch_and_save_data(api_url, file_path)
+        st.success("Options data successfully fetched and saved.")
 
-    # Display market data
-    st.subheader("Market Data")
-    st.write(f"Market Data: {market_data}")
+    # Load options data from the saved JSON file
+    file_path = "options_data.json"
+    try:
+        with open(file_path, 'r') as json_file:
+            options_data = json.load(json_file)
+
+        # Analyze options data
+        analyze_options_data(options_data)
+
+    except FileNotFoundError:
+        st.warning("Options data not found. Please fetch and save data first.")
 
 if __name__ == "__main__":
     main()
