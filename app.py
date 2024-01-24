@@ -18,16 +18,16 @@ table_data = []
 
 # Populate the table with data
 for strike, strike_info in strike_data.items():
-    call_data = strike_info['callOptionData']
-    instrument_key = call_data['instrumentKey']
-    market_data = call_data['marketData']
-    analytics = call_data['analytics']
-    pcr = strike_info['pcr']
+    call_data = strike_info.get('callOptionData', {})
+    instrument_key = call_data.get('instrumentKey', '')
+    market_data = call_data.get('marketData', {})
+    analytics = call_data.get('analytics', {})
+    pcr = strike_info.get('pcr', None)
 
-    row = [strike, instrument_key, market_data['ltp'], market_data['bidPrice'], market_data['bidQty'],
-           market_data['askPrice'], market_data['askQty'], market_data['volume'], market_data['oi'],
-           market_data['prevOi'], analytics['vega'], analytics['theta'], analytics['gamma'], analytics['delta'],
-           analytics['iv'], pcr]
+    row = [strike, instrument_key, market_data.get('ltp', 0), market_data.get('bidPrice', 0), market_data.get('bidQty', 0),
+           market_data.get('askPrice', 0), market_data.get('askQty', 0), market_data.get('volume', 0), market_data.get('oi', 0),
+           market_data.get('prevOi', 0), analytics.get('vega', 0), analytics.get('theta', 0), analytics.get('gamma', 0), analytics.get('delta', 0),
+           analytics.get('iv', 0), pcr]
 
     table_data.append(row)
 
