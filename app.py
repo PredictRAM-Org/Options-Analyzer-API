@@ -2,8 +2,8 @@ import streamlit as st
 import json
 
 # Define the threshold values
-threshold_high = 1000  # You can adjust this value based on your analysis
-threshold_low = 500    # You can adjust this value based on your analysis
+threshold_high = 50000000  # You can adjust this value based on your analysis
+threshold_low = 1500000    # You can adjust this value based on your analysis
 
 # Load JSON data from file
 with open('upstox_data.json', 'r') as file:
