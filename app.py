@@ -62,7 +62,40 @@ row_call = ['Call', instrument_key_call, market_data_call.get('ltp', 0), market_
 
 table_data.append(row_call)
 
-# Put Option Data (similar modifications as for Call Option Data)
+# Put Option Data
+put_data = strike_info.get('putOptionData', {})
+instrument_key_put = put_data.get('instrumentKey', '')
+market_data_put = put_data.get('marketData', {})
+analytics_put = put_data.get('analytics', {})
+oi_put = market_data_put.get('oi', 0)
+prev_oi_put = market_data_put.get('prevOi', 0)
+oi_change_put = oi_put - prev_oi_put
+sentiment_put = 'Bullish' if oi_change_put > 0 else 'Bearish' if oi_change_put < 0 else 'Neutral'
+volume_put = market_data_put.get('volume', 0)
+trend_put = 'Day Trend' if volume_put > 0 and oi_put <= volume_put else 'Long-Term Trend' if volume_put > 0 and oi_put > volume_put else 'No Trend'
+delta_put = analytics_put.get('delta', 0)
+gamma_put = analytics_put.get('gamma', 0)
+vega_put = analytics_put.get('vega', 0)
+theta_put = analytics_put.get('theta', 0)
+iv_put = analytics_put.get('iv', 0)
+pcr_put = strike_info.get('pcr', None)
+sentiment_condition_put = 'Not Defined'  # You can add conditions based on user preferences
+
+# New condition for Vol OI Analysis for Put Option
+vol_oi_analysis_put = ''
+if volume_put > threshold_high and oi_change_put > 0:
+    vol_oi_analysis_put = 'Strong Trend: High Volume and Increasing Open Interest'
+elif (volume_put > threshold_high and oi_change_put < 0) or (volume_put < threshold_low and oi_change_put > 0):
+    vol_oi_analysis_put = 'Potential Reversal: Divergences Between Volume and Open Interest'
+else:
+    vol_oi_analysis_put = 'No Clear Signal'
+
+# Add data to the table for Put Option
+row_put = ['Put', instrument_key_put, market_data_put.get('ltp', 0), market_data_put.get('bidPrice', 0), market_data_put.get('bidQty', 0),
+           market_data_put.get('askPrice', 0), market_data_put.get('askQty', 0), volume_put, oi_put, prev_oi_put, oi_change_put,
+           sentiment_put, trend_put, delta_put, gamma_put, vega_put, theta_put, iv_put, pcr_put, sentiment_condition_put, vol_oi_analysis_put]
+
+table_data.append(row_put)
 
 # Display the table with headings
 st.table([columns] + table_data)
