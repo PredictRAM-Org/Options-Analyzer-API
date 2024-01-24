@@ -27,23 +27,18 @@ def display_data(data):
     call_data = data.get('call', [])
     put_data = data.get('put', [])
 
-    # Display the strike map in the center
+    # Display the strike map and data side by side
     st.write("---")
-    st.subheader("Strike Map")
-    st.write("Center Column - Strike Map")
-    st.write("---")
-
-    # Display the call options on the left
-    st.write("---")
-    st.subheader("Call Options")
-    st.table(pd.DataFrame(call_data))
+    st.subheader("Strike-wise Data")
     st.write("---")
 
-    # Display the put options on the right
-    st.write("---")
-    st.subheader("Put Options")
-    st.table(pd.DataFrame(put_data))
-    st.write("---")
+    # Display header
+    st.write("| Strike | Call Data | Put Data |")
+    st.write("| ------ | --------- | --------- |")
+
+    # Display data row-wise
+    for strike, call, put in zip(call_data, put_data):
+        st.write(f"| {strike['strikePrice']} | {call} | {put} |")
 
 # Streamlit app
 def main():
