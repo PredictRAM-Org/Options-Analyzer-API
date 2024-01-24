@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
 import requests
 
 # Function to fetch options data from the API
@@ -20,10 +19,6 @@ def analyze_options_chain(call_strike, put_strike, options_data):
     # Extract call and put option data
     call_option_data = options_data.get('callOptionData', {}).get(str(call_strike), {})
     put_option_data = options_data.get('putOptionData', {}).get(str(put_strike), {})
-
-    # Debug prints to identify the issue
-    print(f"Selected Call Strike: {call_strike}, Call Option Data: {call_option_data}")
-    print(f"Selected Put Strike: {put_strike}, Put Option Data: {put_option_data}")
 
     # Check if the required data is present
     if not call_option_data or not put_option_data:
@@ -52,6 +47,10 @@ def main():
 
     # Fetch options data from the API
     options_data = fetch_options_data()
+
+    # Display the raw API data in a table
+    st.subheader("Raw API Data:")
+    st.table(pd.DataFrame(options_data.items(), columns=['Key', 'Value']))
 
     # Get unique strike prices for call and put
     call_strike_options = sorted(options_data.get('callOptionData', {}).keys(), key=int)
