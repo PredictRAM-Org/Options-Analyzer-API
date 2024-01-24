@@ -37,13 +37,21 @@ def main():
         st.table(call_options)
     else:
         st.warning("No data available for selected strikeMap.")
-    
+
     # Display put option data in a table
     st.subheader("Put Option Data")
     if put_options:
         st.table(put_options)
     else:
         st.warning("No data available for selected strikeMap.")
+
+    # Display market data
+    st.subheader("Market Data")
+    market_data = option_data.get('marketData', {})
+    st.write(f"Open Interest (OI): {market_data.get('oi', 'N/A')}")
+    st.write(f"Change in OI: {market_data.get('changeInOI', 'N/A')}")
+    st.write(f"Volume: {market_data.get('volume', 'N/A')}")
+    st.write(f"Change in Volume: {market_data.get('changeInVolume', 'N/A')}")
 
 if __name__ == "__main__":
     main()
