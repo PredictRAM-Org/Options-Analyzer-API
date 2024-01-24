@@ -49,7 +49,7 @@ else:
 
 # Calculate Call Sum | Calculated
 call_sum_calculated = 0
-for i in range(int(selected_strike), int(selected_strike) + 3):
+for i in range(int(selected_strike), int(selected_strike) - 3, -1):
     if str(i) in strike_data:
         call_sum_calculated += strike_data[str(i)].get('callOptionData', {}).get('marketData', {}).get('oi', 0) - strike_data[str(i)].get('callOptionData', {}).get('marketData', {}).get('prevOi', 0)
 
@@ -84,7 +84,7 @@ else:
 
 # Calculate Put Sum | Calculated
 put_sum_calculated = 0
-for i in range(int(selected_strike) - 2, int(selected_strike) + 1):
+for i in range(int(selected_strike), int(selected_strike) + 3):
     if str(i) in strike_data:
         put_sum_calculated += strike_data[str(i)].get('putOptionData', {}).get('marketData', {}).get('oi', 0) - strike_data[str(i)].get('putOptionData', {}).get('marketData', {}).get('prevOi', 0)
 
