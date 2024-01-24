@@ -1,57 +1,46 @@
 import streamlit as st
 import requests
-import pandas as pd
 
-# Function to fetch data from the API
-def fetch_data(api_url):
+# Function to fetch option data based on strikeMap
+def fetch_option_data(strike_map):
+    api_url = f"https://service.upstox.com/option-analytics-tool/open/v1/strategy-chains?assetKey=NSE_INDEX%7CNifty+50&strategyChainType=PC_CHAIN&expiry=25-01-2024"
     response = requests.get(api_url)
+    
     if response.status_code == 200:
-        return response.json()
+        option_data = response.json()
+        
+        # Filter data based on selected strikeMap
+        call_option_data = [option for option in option_data['callOptionData'] if option['strikeMap'] == strike_map]
+        put_option_data = [option for option in option_data['putOptionData'] if option['strikeMap'] == strike_map]
+        
+        return call_option_data, put_option_data
     else:
-        st.error(f"Error fetching data. Status code: {response.status_code}")
-        return None
-
-# Function to process and display the data
-def display_data(data):
-    st.subheader("Raw Data:")
-    if not data:
-        st.error("Error: Invalid data format.")
-        st.write("No data available.")
-        return
-
-    st.dataframe(pd.json_normalize(data), width=1000, height=400)
-
-    st.subheader("Options Open Interest Analysis")
-
-    # Separate call and put data
-    call_data = data.get('call', [])
-    put_data = data.get('put', [])
-
-    # Display the strike map and data side by side
-    st.write("---")
-    st.subheader("Strike-wise Data")
-    st.write("---")
-
-    # Display header
-    st.write("| Strike | Call Data | Put Data |")
-    st.write("| ------ | --------- | --------- |")
-
-    # Display data row-wise
-    for strike, call, put in zip(call_data, put_data):
-        st.write(f"| {strike['strikePrice']} | {call} | {put} |")
+        st.error(f"Error fetching data. Status Code: {response.status_code}")
+        return None, None
 
 # Streamlit app
 def main():
-    st.title("Options Analytics Tool")
+    st.title("Option Analytics App")
     
-    # API link
-    api_link = "https://service.upstox.com/option-analytics-tool/open/v1/strategy-chains?assetKey=NSE_INDEX%7CNifty+50&strategyChainType=PC_CHAIN&expiry=25-01-2024"
+    # Option to select strikeMap
+    selected_strike_map = st.selectbox("Select StrikeMap:", [100, 200, 300, 400, 500])
     
-    # Fetch data from the API
-    data = fetch_data(api_link)
+    # Fetch option data based on selected strikeMap
+    call_options, put_options = fetch_option_data(selected_strike_map)
     
-    # Display data
-    display_data(data)
+    # Display call option data in a table
+    st.subheader("Call Option Data")
+    if call_options:
+        st.table(call_options)
+    else:
+        st.warning("No data available for selected strikeMap.")
+    
+    # Display put option data in a table
+    st.subheader("Put Option Data")
+    if put_options:
+        st.table(put_options)
+    else:
+        st.warning("No data available for selected strikeMap.")
 
 if __name__ == "__main__":
     main()
