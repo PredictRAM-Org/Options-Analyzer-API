@@ -24,7 +24,7 @@ def analyze_options_chain(call_strike, put_strike, options_data):
     # Check if the required data is present
     if not call_option_data or not put_option_data:
         st.error("Error: Options data not found for the selected strikes.")
-        return None, None, None, None, None
+        return {}
 
     # Extract relevant information from call and put option data
     call_sum = call_option_data.get('marketData', {}).get('oi', 0)
