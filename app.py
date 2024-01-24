@@ -31,5 +31,5 @@ for strike, strike_info in strike_data.items():
 
     table_data.append(row)
 
-# Display the table
-st.table(table_data)
+# Display the table with headings
+st.table([columns] + table_data)
