@@ -13,7 +13,8 @@ def fetch_data(api_url):
 
 # Function to process and display the data
 def display_data(data):
-    if not data:
+    if not data or 'call' not in data or 'put' not in data:
+        st.error("Error: Invalid data format.")
         return
 
     call_sum = sum(item['oi'] - item['prevOi'] for item in data['call'])
@@ -21,10 +22,16 @@ def display_data(data):
     difference = call_sum - put_sum
 
     st.subheader("Options Open Interest Analysis")
-    
+
     # Display the data in a table
-    df = pd.DataFrame(data)
-    st.dataframe(df)
+    df_call = pd.DataFrame(data['call'])
+    df_put = pd.DataFrame(data['put'])
+
+    st.subheader("Call Options")
+    st.dataframe(df_call)
+
+    st.subheader("Put Options")
+    st.dataframe(df_put)
 
     st.subheader("Summary")
     st.write(f"Call Sum: {call_sum}")
