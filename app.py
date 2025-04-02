@@ -13,7 +13,7 @@ with open('upstox_data.json', 'r') as file:
 strike_data = data['data']['strategyChainData']['strikeMap']
 
 # Display the table using Streamlit
-st.title('Option Chain Data Analysissss')
+st.title('Option Chain Data Analysissss11')
 st.write("Select a strike price to view detailed information for both call and put options.")
 
 # Dropdown to select the strike price
