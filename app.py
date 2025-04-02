@@ -1,192 +1,268 @@
 import streamlit as st
 import json
 import pandas as pd
+import plotly.express as px
 
-# Define the threshold values
-threshold_high = 5000000  # You can adjust this value based on your analysis
-threshold_low = 1000000    # You can adjust this value based on your analysis
+# Configure page
+st.set_page_config(
+    page_title="Options Chain Dashboard",
+    page_icon="📊",
+    layout="wide"
+)
 
-# Load JSON data from file
-with open('upstox_data.json', 'r') as file:
-    data = json.load(file)
+# Custom CSS
+st.markdown("""
+<style>
+    .main {
+        background-color: #f8f9fa;
+    }
+    .header {
+        color: #2c3e50;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+    .metric-card {
+        background-color: white;
+        border-radius: 10px;
+        padding: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+    }
+    .stDataFrame {
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .positive {
+        color: #27ae60;
+    }
+    .negative {
+        color: #e74c3c;
+    }
+</style>
+""", unsafe_allow_html=True)
 
-# Extract relevant data
+# Load data
+@st.cache_data
+def load_data():
+    with open('upstox_data.json', 'r') as file:
+        return json.load(file)
+
+data = load_data()
 strike_data = data['data']['strategyChainData']['strikeMap']
 
-# Display the table using Streamlit
-st.title('Option Chain Data Analysis')
-st.write("Select a strike price to view detailed information for both call and put options.")
+# Thresholds
+threshold_high = 5000000
+threshold_low = 1000000
 
-# Dropdown to select the strike price
-selected_strike = st.selectbox('Select Strike Price', list(map(float, strike_data.keys())))
+# Dashboard Header
+st.markdown("<div class='header'><h1>📊 Options Chain Dashboard</h1></div>", unsafe_allow_html=True)
 
-# Simplified column names for better display
-columns = [
-    'Option Type', 'LTP', 'Bid Price', 'Bid Qty', 'Ask Price', 'Ask Qty', 
-    'Volume', 'OI', 'OI Change', 'Sentiment', 'Trend', 'Delta',
-    'IV', 'PCR', 'Vol-OI Analysis', 'Call Sum', 'Put Sum', 'Flow Diff'
-]
+# Sidebar filters
+with st.sidebar:
+    st.header("Filters")
+    selected_strike = st.selectbox(
+        'Select Strike Price', 
+        sorted(list(map(float, strike_data.keys()))),
+        index=len(strike_data)//2
+    )
+    st.markdown("---")
+    st.markdown("**Threshold Settings**")
+    threshold_high = st.number_input("High Volume Threshold", value=5000000)
+    threshold_low = st.number_input("Low Volume Threshold", value=1000000)
+    st.markdown("---")
+    st.markdown("Built with Streamlit")
 
-# Mapping between original and simplified column names
-column_mapping = {
-    'Option Type': 'Option Type',
-    'Instrument Key': 'Instrument Key',
-    'LTP': 'LTP',
-    'Bid Price': 'Bid Price',
-    'Bid Qty': 'Bid Qty',
-    'Ask Price': 'Ask Price',
-    'Ask Qty': 'Ask Qty',
-    'Volume': 'Volume',
-    'OI': 'OI',
-    'Prev OI': 'Prev OI',
-    'OI Change': 'OI Change',
-    'Call OI Change | Calculated': 'Call OI Change',
-    'Put OI Change | Calculated': 'Put OI Change',
-    'Total Call Change in OI': 'Total Call ΔOI',
-    'Total Put Change in OI': 'Total Put ΔOI',
-    'Sentiment': 'Sentiment',
-    'Trend': 'Trend',
-    'Delta': 'Delta',
-    'Gamma': 'Gamma',
-    'Vega': 'Vega',
-    'Theta': 'Theta',
-    'IV': 'IV',
-    'PCR': 'PCR',
-    'Sentiment Condition': 'Sentiment Cond',
-    'Vol OI Analysis': 'Vol-OI Analysis',
-    'Call Sum | Calculated': 'Call Sum',
-    'Put Sum | Calculated': 'Put Sum',
-    'Options Flow Diff | Calculated': 'Flow Diff'
-}
-
-table_data = []
-
-# Populate the table with data for the selected strike
-strike_info = strike_data[str(selected_strike)]
-
-# Call Option Data
-call_data = strike_info.get('callOptionData', {})
-market_data_call = call_data.get('marketData', {})
-oi_call = market_data_call.get('oi', 0)
-prev_oi_call = market_data_call.get('prevOi', 0)
-oi_change_call = oi_call - prev_oi_call
-volume_call = market_data_call.get('volume', 0)
-delta_call = call_data.get('analytics', {}).get('delta', 0)
-
-# Vol OI Analysis for Call
-vol_oi_analysis_call = ''
-if volume_call > threshold_high and oi_change_call > 0:
-    vol_oi_analysis_call = 'Strong Trend'
-elif (volume_call > threshold_high and oi_change_call < 0) or (volume_call < threshold_low and oi_change_call > 0):
-    vol_oi_analysis_call = 'Potential Reversal'
-else:
-    vol_oi_analysis_call = 'No Clear Signal'
-
-# Calculate Call Sum
-call_sum_calculated = 0
-for i in range(int(selected_strike), int(selected_strike) - 5, -1):
-    if str(i) in strike_data:
-        call_sum_calculated += strike_data[str(i)].get('callOptionData', {}).get('marketData', {}).get('oi', 0) - strike_data[str(i)].get('callOptionData', {}).get('marketData', {}).get('prevOi', 0)
-
-# Put Option Data
-put_data = strike_info.get('putOptionData', {})
-market_data_put = put_data.get('marketData', {})
-oi_put = market_data_put.get('oi', 0)
-prev_oi_put = market_data_put.get('prevOi', 0)
-oi_change_put = oi_put - prev_oi_put
-volume_put = market_data_put.get('volume', 0)
-delta_put = put_data.get('analytics', {}).get('delta', 0)
-
-# Vol OI Analysis for Put
-vol_oi_analysis_put = ''
-if volume_put > threshold_high and oi_change_put > 0:
-    vol_oi_analysis_put = 'Strong Trend'
-elif (volume_put > threshold_high and oi_change_put < 0) or (volume_put < threshold_low and oi_change_put > 0):
-    vol_oi_analysis_put = 'Potential Reversal'
-else:
-    vol_oi_analysis_put = 'No Clear Signal'
-
-# Calculate Put Sum
-put_sum_calculated = 0
-for i in range(int(selected_strike), int(selected_strike) + 5):
-    if str(i) in strike_data:
-        put_sum_calculated += strike_data[str(i)].get('putOptionData', {}).get('marketData', {}).get('oi', 0) - strike_data[str(i)].get('putOptionData', {}).get('marketData', {}).get('prevOi', 0)
-
-# Calculate Options Flow Difference
-options_flow_diff_calculated = call_sum_calculated - put_sum_calculated
-
-# Create DataFrame for better display
-df = pd.DataFrame(columns=columns)
-
-# Add Call data
-df.loc['Call'] = [
-    'Call',
-    market_data_call.get('ltp', 0),
-    market_data_call.get('bidPrice', 0),
-    market_data_call.get('bidQty', 0),
-    market_data_call.get('askPrice', 0),
-    market_data_call.get('askQty', 0),
-    volume_call,
-    oi_call,
-    oi_change_call,
-    'Bullish' if oi_change_call > 0 else 'Bearish' if oi_change_call < 0 else 'Neutral',
-    'Day Trend' if volume_call > 0 and oi_call <= volume_call else 'Long-Term' if volume_call > 0 and oi_call > volume_call else 'No Trend',
-    delta_call,
-    call_data.get('analytics', {}).get('iv', 0),
-    strike_info.get('pcr', None),
-    vol_oi_analysis_call,
-    call_sum_calculated,
-    put_sum_calculated,
-    options_flow_diff_calculated
-]
-
-# Add Put data
-df.loc['Put'] = [
-    'Put',
-    market_data_put.get('ltp', 0),
-    market_data_put.get('bidPrice', 0),
-    market_data_put.get('bidQty', 0),
-    market_data_put.get('askPrice', 0),
-    market_data_put.get('askQty', 0),
-    volume_put,
-    oi_put,
-    oi_change_put,
-    'Bullish' if oi_change_put > 0 else 'Bearish' if oi_change_put < 0 else 'Neutral',
-    'Day Trend' if volume_put > 0 and oi_put <= volume_put else 'Long-Term' if volume_put > 0 and oi_put > volume_put else 'No Trend',
-    delta_put,
-    put_data.get('analytics', {}).get('iv', 0),
-    strike_info.get('pcr', None),
-    vol_oi_analysis_put,
-    call_sum_calculated,
-    put_sum_calculated,
-    options_flow_diff_calculated
-]
-
-# Format numeric columns
-numeric_cols = ['LTP', 'Bid Price', 'Ask Price', 'Volume', 'OI', 'OI Change', 'Delta', 'IV', 'Call Sum', 'Put Sum', 'Flow Diff']
-df[numeric_cols] = df[numeric_cols].applymap(lambda x: f"{x:,.2f}" if isinstance(x, (int, float)) else x)
-
-# Display the table
-st.dataframe(df.style
-    .set_properties(**{'text-align': 'center'})
-    .set_table_styles([{
-        'selector': 'th',
-        'props': [('text-align', 'center')]
-    }]), 
-    use_container_width=True)
-
-# Add some metrics at the top
+# Main content
 col1, col2, col3 = st.columns(3)
-with col1:
-    st.metric("PCR", f"{strike_info.get('pcr', 0):.2f}")
-with col2:
-    st.metric("Call OI Change", f"{oi_change_call:,}")
-with col3:
-    st.metric("Put OI Change", f"{oi_change_put:,}")
 
-# Add interpretation
-st.subheader("Interpretation")
-if options_flow_diff_calculated > 0:
-    st.warning("Options Flow Difference is positive (Call-heavy), suggesting potential bullish sentiment")
-else:
-    st.warning("Options Flow Difference is negative (Put-heavy), suggesting potential bearish sentiment")
+with col1:
+    st.markdown("<div class='metric-card'><h3>Put-Call Ratio</h3>", unsafe_allow_html=True)
+    pcr = strike_data[str(selected_strike)].get('pcr', 0)
+    pcr_color = "positive" if pcr < 1 else "negative"
+    st.markdown(f"<h2 class='{pcr_color}'>{pcr:.2f}</h2>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+with col2:
+    st.markdown("<div class='metric-card'><h3>Total Call OI Change</h3>", unsafe_allow_html=True)
+    call_oi_change = strike_data[str(selected_strike)].get('callOptionData', {}).get('marketData', {}).get('oi', 0) - \
+                    strike_data[str(selected_strike)].get('callOptionData', {}).get('marketData', {}).get('prevOi', 0)
+    call_color = "positive" if call_oi_change > 0 else "negative"
+    st.markdown(f"<h2 class='{call_color}'>{call_oi_change:,}</h2>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+with col3:
+    st.markdown("<div class='metric-card'><h3>Total Put OI Change</h3>", unsafe_allow_html=True)
+    put_oi_change = strike_data[str(selected_strike)].get('putOptionData', {}).get('marketData', {}).get('oi', 0) - \
+                   strike_data[str(selected_strike)].get('putOptionData', {}).get('marketData', {}).get('prevOi', 0)
+    put_color = "positive" if put_oi_change > 0 else "negative"
+    st.markdown(f"<h2 class='{put_color}'>{put_oi_change:,}</h2>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+# Prepare data for the selected strike
+strike_info = strike_data[str(selected_strike)]
+call_data = strike_info.get('callOptionData', {})
+put_data = strike_info.get('putOptionData', {})
+
+# Create DataFrame for display
+df = pd.DataFrame({
+    'Metric': [
+        'LTP', 'Bid Price', 'Bid Qty', 'Ask Price', 'Ask Qty', 
+        'Volume', 'OI', 'OI Change', 'IV', 'Delta',
+        'Gamma', 'Vega', 'Theta'
+    ],
+    'Call': [
+        call_data.get('marketData', {}).get('ltp', 0),
+        call_data.get('marketData', {}).get('bidPrice', 0),
+        call_data.get('marketData', {}).get('bidQty', 0),
+        call_data.get('marketData', {}).get('askPrice', 0),
+        call_data.get('marketData', {}).get('askQty', 0),
+        call_data.get('marketData', {}).get('volume', 0),
+        call_data.get('marketData', {}).get('oi', 0),
+        call_data.get('marketData', {}).get('oi', 0) - call_data.get('marketData', {}).get('prevOi', 0),
+        call_data.get('analytics', {}).get('iv', 0),
+        call_data.get('analytics', {}).get('delta', 0),
+        call_data.get('analytics', {}).get('gamma', 0),
+        call_data.get('analytics', {}).get('vega', 0),
+        call_data.get('analytics', {}).get('theta', 0)
+    ],
+    'Put': [
+        put_data.get('marketData', {}).get('ltp', 0),
+        put_data.get('marketData', {}).get('bidPrice', 0),
+        put_data.get('marketData', {}).get('bidQty', 0),
+        put_data.get('marketData', {}).get('askPrice', 0),
+        put_data.get('marketData', {}).get('askQty', 0),
+        put_data.get('marketData', {}).get('volume', 0),
+        put_data.get('marketData', {}).get('oi', 0),
+        put_data.get('marketData', {}).get('oi', 0) - put_data.get('marketData', {}).get('prevOi', 0),
+        put_data.get('analytics', {}).get('iv', 0),
+        put_data.get('analytics', {}).get('delta', 0),
+        put_data.get('analytics', {}).get('gamma', 0),
+        put_data.get('analytics', {}).get('vega', 0),
+        put_data.get('analytics', {}).get('theta', 0)
+    ]
+})
+
+# Format DataFrame
+df['Call'] = df['Call'].apply(lambda x: f"{x:,.2f}" if isinstance(x, (int, float)) else x)
+df['Put'] = df['Put'].apply(lambda x: f"{x:,.2f}" if isinstance(x, (int, float)) else x)
+
+# Display data table
+st.markdown(f"<h2 style='margin-top: 20px;'>Strike Price: {selected_strike}</h2>", unsafe_allow_html=True)
+st.dataframe(
+    df.set_index('Metric'),
+    use_container_width=True,
+    height=600
+)
+
+# Visualization section
+st.markdown("---")
+st.markdown("<h2>Options Flow Analysis</h2>", unsafe_allow_html=True)
+
+# Calculate OI changes for nearby strikes
+strikes = sorted(list(map(float, strike_data.keys())))
+current_idx = strikes.index(selected_strike)
+nearby_strikes = strikes[max(0, current_idx-5):min(len(strikes), current_idx+6)]
+
+call_oi_changes = []
+put_oi_changes = []
+for strike in nearby_strikes:
+    call_oi = strike_data[str(strike)].get('callOptionData', {}).get('marketData', {}).get('oi', 0)
+    prev_call_oi = strike_data[str(strike)].get('callOptionData', {}).get('marketData', {}).get('prevOi', 0)
+    call_oi_changes.append(call_oi - prev_call_oi)
+    
+    put_oi = strike_data[str(strike)].get('putOptionData', {}).get('marketData', {}).get('oi', 0)
+    prev_put_oi = strike_data[str(strike)].get('putOptionData', {}).get('marketData', {}).get('prevOi', 0)
+    put_oi_changes.append(put_oi - prev_put_oi)
+
+# Create OI change plot
+fig = px.bar(
+    x=nearby_strikes,
+    y=[call_oi_changes, put_oi_changes],
+    barmode='group',
+    labels={'x': 'Strike Price', 'y': 'OI Change'},
+    title=f'Open Interest Changes Around {selected_strike}',
+    color_discrete_map={0: '#3498db', 1: '#e74c3c'}
+)
+fig.update_layout(
+    legend_title_text='Option Type',
+    legend=dict(
+        orientation="h",
+        yanchor="bottom",
+        y=1.02,
+        xanchor="right",
+        x=1
+    )
+)
+st.plotly_chart(fig, use_container_width=True)
+
+# Sentiment analysis
+st.markdown("---")
+st.markdown("<h2>Market Sentiment Analysis</h2>", unsafe_allow_html=True)
+
+sentiment_cols = st.columns(3)
+with sentiment_cols[0]:
+    st.markdown("<div class='metric-card'><h4>Call Sentiment</h4>", unsafe_allow_html=True)
+    call_sentiment = "Bullish" if call_oi_change > 0 else "Bearish"
+    sentiment_color = "positive" if call_sentiment == "Bullish" else "negative"
+    st.markdown(f"<h3 class='{sentiment_color}'>{call_sentiment}</h3>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+with sentiment_cols[1]:
+    st.markdown("<div class='metric-card'><h4>Put Sentiment</h4>", unsafe_allow_html=True)
+    put_sentiment = "Bullish" if put_oi_change > 0 else "Bearish"
+    sentiment_color = "positive" if put_sentiment == "Bullish" else "negative"
+    st.markdown(f"<h3 class='{sentiment_color}'>{put_sentiment}</h3>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+with sentiment_cols[2]:
+    st.markdown("<div class='metric-card'><h4>Overall Sentiment</h4>", unsafe_allow_html=True)
+    if pcr < 0.7:
+        overall_sentiment = "Strongly Bullish"
+        sentiment_color = "positive"
+    elif pcr < 1:
+        overall_sentiment = "Mildly Bullish"
+        sentiment_color = "positive"
+    elif pcr < 1.3:
+        overall_sentiment = "Neutral"
+        sentiment_color = ""
+    else:
+        overall_sentiment = "Bearish"
+        sentiment_color = "negative"
+    st.markdown(f"<h3 class='{sentiment_color}'>{overall_sentiment}</h3>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+# Volume-OI Analysis
+st.markdown("---")
+st.markdown("<h2>Volume-Open Interest Analysis</h2>", unsafe_allow_html=True)
+
+vol_oi_cols = st.columns(2)
+with vol_oi_cols[0]:
+    st.markdown("<div class='metric-card'><h4>Call Analysis</h4>", unsafe_allow_html=True)
+    call_vol = call_data.get('marketData', {}).get('volume', 0)
+    if call_vol > threshold_high and call_oi_change > 0:
+        analysis = "Strong Trend: High Volume + Increasing OI"
+        color = "positive"
+    elif (call_vol > threshold_high and call_oi_change < 0) or (call_vol < threshold_low and call_oi_change > 0):
+        analysis = "Potential Reversal: Divergence"
+        color = "negative"
+    else:
+        analysis = "No Clear Signal"
+        color = ""
+    st.markdown(f"<p class='{color}'>{analysis}</p>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+with vol_oi_cols[1]:
+    st.markdown("<div class='metric-card'><h4>Put Analysis</h4>", unsafe_allow_html=True)
+    put_vol = put_data.get('marketData', {}).get('volume', 0)
+    if put_vol > threshold_high and put_oi_change > 0:
+        analysis = "Strong Trend: High Volume + Increasing OI"
+        color = "positive"
+    elif (put_vol > threshold_high and put_oi_change < 0) or (put_vol < threshold_low and put_oi_change > 0):
+        analysis = "Potential Reversal: Divergence"
+        color = "negative"
+    else:
+        analysis = "No Clear Signal"
+        color = ""
+    st.markdown(f"<p class='{color}'>{analysis}</p>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
